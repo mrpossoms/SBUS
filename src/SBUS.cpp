@@ -32,13 +32,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if defined(__MK20DX128__) || defined(__MK20DX256__)
 	// globals needed for emulating two stop bytes on Teensy 3.0 and 3.1/3.2
 	IntervalTimer serialTimer;
-	HardwareSerial* SERIALPORT;
+	Stream* SERIALPORT;
 	uint8_t PACKET[25];
 	volatile int SENDINDEX;
 	void sendByte();
 #endif
 /* SBUS object, input the serial bus */
-SBUS::SBUS(HardwareSerial& bus)
+SBUS::SBUS(Stream& bus)
 {
 	_bus = &bus;
 }

@@ -40,7 +40,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 class SBUS{
 	public:
-		SBUS(HardwareSerial& bus);
+		SBUS(Stream& bus);
 		void begin();
 		bool read(uint16_t* channels, bool* failsafe, bool* lostFrame);
 		bool readCal(float* calChannels, bool* failsafe, bool* lostFrame);
@@ -75,7 +75,7 @@ class SBUS{
 		float **_readCoeff, **_writeCoeff;
 		uint8_t _readLen[_numChannels],_writeLen[_numChannels];
 		bool _useReadCoeff[_numChannels], _useWriteCoeff[_numChannels];
-		HardwareSerial* _bus;
+		Stream* _bus;
 		bool parse();
 		void scaleBias(uint8_t channel);
 		float PolyVal(size_t PolySize, float *Coefficients, float X);
