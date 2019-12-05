@@ -32,15 +32,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if defined(__MK20DX128__) || defined(__MK20DX256__)
 	// globals needed for emulating two stop bytes on Teensy 3.0 and 3.1/3.2
 	IntervalTimer serialTimer;
-	Stream* SERIALPORT;
+	HardwareSerial* SERIALPORT;
 	uint8_t PACKET[25];
 	volatile int SENDINDEX;
 	void sendByte();
 #endif
 /* SBUS object, input the serial bus */
-SBUS::SBUS(Stream& bus)
+SBUS::SBUS(HardwareSerial& bus)
 {
-	_bus = &bus;
+	_hw_bus = &bus;
+	_bus = _hw_bus;
+}
+
+/* SBUS object, input the serial bus */
+SBUS::SBUS(SoftwareSerial& bus)
+{
+	_sw_bus = &bus;
+	_bus = _sw_bus;
 }
 
 /* starts the serial communication */
@@ -52,25 +60,37 @@ void SBUS::begin()
 	for (uint8_t i = 0; i < _numChannels; i++) {
 		setEndPoints(i,_defaultMin,_defaultMax);
 	}
+	
+	int config = 0;	
+
 	// begin the serial port for SBUS
 	#if defined(__MK20DX128__) || defined(__MK20DX256__)  // Teensy 3.0 || Teensy 3.1/3.2
-		_bus->begin(_sbusBaud,SERIAL_8E1_RXINV_TXINV);
+		config = SERIAL_8E1_RXINV_TXINV;
 		SERIALPORT = _bus;
 	#elif defined(__IMXRT1062__) || defined(__IMXRT1052__) || defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__MKL26Z64__)  // Teensy 4.0 || Teensy 4.0 Beta || Teensy 3.5 || Teensy 3.6 || Teensy LC
-		_bus->begin(_sbusBaud,SERIAL_8E2_RXINV_TXINV);
+		config = SERIAL_8E2_RXINV_TXINV;
 	#elif defined(STM32L496xx) || defined(STM32L476xx) || defined(STM32L433xx) || defined(STM32L432xx)  // STM32L4
-		_bus->begin(_sbusBaud,SERIAL_SBUS);
+		config = SERIAL_SBUS;
 	#elif defined(_BOARD_MAPLE_MINI_H_) // Maple Mini
-		_bus->begin(_sbusBaud,SERIAL_8E2);
+		config = SERIAL_8E2;
 	#elif defined(ESP32)              	// ESP32
-    _bus->begin(_sbusBaud,SERIAL_8E2);
+    		config = SERIAL_8E2;
   #elif defined(__AVR_ATmega2560__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega32U4__)		// Arduino Mega 2560, 328P or 32u4
-    _bus->begin(_sbusBaud, SERIAL_8E2);
+		config = SERIAL_8E2;
 	#elif defined(ARDUINO_SAMD_ZERO)		// Adafruit Feather M0
-		_bus->begin(_sbusBaud, SERIAL_8E2);
+		config = SERIAL_8E2;
 	#else
 		#error unsupported device
   #endif
+
+	if (_sw_bus)
+	{
+		_sw_bus->begin(_sbusBaud);
+	}
+	else if (_hw_bus)
+	{
+		_hw_bus->begin(_sbusBaud, config);
+	}
 }
 
 /* read the SBUS data */

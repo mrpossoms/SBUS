@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #define SBUS_h
 
 #include "Arduino.h"
+#include "SoftwareSerial.h"
 #include "elapsedMillis.h"
 
 /*
@@ -40,7 +41,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 class SBUS{
 	public:
-		SBUS(Stream& bus);
+		SBUS(HardwareSerial& bus);
+		SBUS(SoftwareSerial& bus);
 		void begin();
 		bool read(uint16_t* channels, bool* failsafe, bool* lostFrame);
 		bool readCal(float* calChannels, bool* failsafe, bool* lostFrame);
@@ -75,6 +77,8 @@ class SBUS{
 		float **_readCoeff, **_writeCoeff;
 		uint8_t _readLen[_numChannels],_writeLen[_numChannels];
 		bool _useReadCoeff[_numChannels], _useWriteCoeff[_numChannels];
+		HardwareSerial* _hw_bus;
+		SoftwareSerial* _sw_bus;
 		Stream* _bus;
 		bool parse();
 		void scaleBias(uint8_t channel);
